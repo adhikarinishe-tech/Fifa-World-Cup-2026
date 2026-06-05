@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>এই বিশ্বকাপে আপনি কোন দলের ফ্যান?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f4b 50%, #0d1229 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        .bg-balls {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .bg-ball {
+            position: absolute;
+            width: 40px; height: 40px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/><path d="M50 5 L65 25 L50 45 L35 25 Z" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/><path d="M20 30 L35 25 L30 50 L10 45 Z" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/><path d="M80 30 L65 25 L70 50 L90 45 Z" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/><path d="M30 50 L50 45 L70 50 L50 75 Z" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/><path d="M10 45 L30 50 L20 70 L5 55 Z" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/><path d="M90 45 L70 50 L80 70 L95 55 Z" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/></svg>') no-repeat center;
+            background-size: contain;
+            animation: floatBall 20s infinite linear;
+            opacity: 0.3;
+        }
+        @keyframes floatBall {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(360deg); }
+        }
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .header-badge {
+            display: inline-block;
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+            color: #fff;
+            padding: 8px 24px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+        .main-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fbbf24;
+            text-shadow: 0 2px 10px rgba(251, 191, 36, 0.3);
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 25px;
+        }
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+        }
+        .stat-item { text-align: center; }
+        .stat-label { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .stat-value { font-size: 20px; font-weight: 700; color: #fbbf24; }
+        .stat-icon { font-size: 24px; }
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #fbbf24;
+        }
+        .section-title .emoji { font-size: 22px; }
+        .team-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .team-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 25px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .team-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .team-card:active { transform: scale(0.98); }
+        .team-flag {
+            font-size: 50px;
+            margin-bottom: 10px;
+            display: block;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+        .team-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .team-nickname {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+        }
+        .germany-card { grid-column: span 2; max-width: 50%; margin: 0 auto; }
+        .content-page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        .content-page.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Hind Siliguri', sans-serif;
+            font-size: 14px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        .chat-container {
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .chat-bubble {
+            background: rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 15px 18px;
+            margin-bottom: 12px;
+            border-left: 4px solid;
+            font-size: 15px;
+            line-height: 1.7;
+            opacity: 0;
+            transform: translateX(-20px);
+            animation: slideIn 0.5s forwards;
+        }
+        .chat-bubble.b1 { border-color: #f59e0b; animation-delay: 0.2s; }
+        .chat-bubble.b2 { border-color: #ef4444; animation-delay: 0.8s; }
+        .chat-bubble.b3 { border-color: #22c55e; animation-delay: 1.4s; }
+        .chat-bubble.b4 { border-color: #3b82f6; animation-delay: 2.0s; }
+        .chat-bubble.b5 { border-color: #a855f7; animation-delay: 2.6s; }
+        .chat-bubble.b6 { border-color: #f97316; animation-delay: 3.2s; }
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .typing-indicator {
+            display: flex;
+            gap: 6px;
+            padding: 12px 18px;
+            margin-bottom: 12px;
+        }
+        .typing-dot {
+            width: 8px; height: 8px;
+            background: #fbbf24;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        .share-section {
+            text-align: center;
+            margin-top: 25px;
+        }
+        .share-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .share-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        .share-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 15px 20px;
+            border-radius: 16px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: #fff;
+            font-family: 'Hind Siliguri', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            min-width: 100px;
+        }
+        .share-btn:hover { transform: translateY(-3px); }
+        .share-btn svg { width: 32px; height: 32px; }
+        .fb-btn { background: linear-gradient(135deg, #1877f2, #166fe5); }
+        .msg-btn { background: linear-gradient(135deg, #0084ff, #0066cc); }
+        .wa-btn { background: linear-gradient(135deg, #25d366, #128c7e); }
+        .copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            border: 1px dashed rgba(255,255,255,0.3);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Hind Siliguri', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .copy-btn:hover { background: rgba(255,255,255,0.15); }
+        .audio-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px; height: 50px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+            z-index: 100;
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+        .audio-control:hover { transform: scale(1.1); }
+        .audio-control.playing { animation: pulse 1.5s infinite; }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); }
+            50% { box-shadow: 0 4px 25px rgba(245, 158, 11, 0.7); }
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255,255,255,0.3);
+            font-size: 12px;
+            margin-top: 30px;
+        }
+        @media (max-width: 400px) {
+            .team-grid { gap: 10px; }
+            .team-card { padding: 20px 10px; }
+            .team-flag { font-size: 40px; }
+            .share-buttons { flex-wrap: wrap; }
+            .share-btn { min-width: 80px; padding: 12px 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-balls" id="bgBalls"></div>
+    <div class="container">
+        <!-- HOME PAGE -->
+        <div id="homePage" class="content-page active">
+            <div style="text-align: center; padding-top: 20px;">
+                <div class="header-badge">🏆 FIFA বিশ্বকাপ ২০২৬</div>
+                <h1 class="main-title">🌍 কোন দলের ফ্যান আপনি?</h1>
+                <p class="subtitle">এই বিশ্বকাপে আপনি কোন দলের ফ্যান চেক করুন!</p>
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-label">দল</div>
+                        <div class="stat-value">⚽</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">বিশ্বকাপ ২০২৬</div>
+                        <div class="stat-icon">🏆</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">ভিজিটর</div>
+                        <div class="stat-value" id="visitorCount">১২৪৭</div>
+                    </div>
+                </div>
+                <div class="section-title">
+                    <span class="emoji">👇</span>
+                    আপনার দল বেছে নিন
+                </div>
+                <div class="team-grid">
+                    <div class="team-card" onclick="showTeam('argentina')">
+                        <span class="team-flag">🇦🇷</span>
+                        <div class="team-name">আর্জেন্টিনা</div>
+                        <div class="team-nickname">La Albiceleste</div>
+                    </div>
+                    <div class="team-card" onclick="showTeam('brazil')">
+                        <span class="team-flag">🇧🇷</span>
+                        <div class="team-name">ব্রাজিল</div>
+                        <div class="team-nickname">A Seleção</div>
+                    </div>
+                    <div class="team-card" onclick="redirectToLink()">
+                        <span class="team-flag">🇫🇷</span>
+                        <div class="team-name">ফ্রান্স</div>
+                        <div class="team-nickname">Les Bleus</div>
+                    </div>
+                    <div class="team-card" onclick="redirectToLink()">
+                        <span class="team-flag">🇵🇹</span>
+                        <div class="team-name">পর্তুগাল</div>
+                        <div class="team-nickname">A Seleção das Quinas</div>
+                    </div>
+                </div>
+                <div class="team-card germany-card" onclick="redirectToLink()">
+                    <span class="team-flag">🇩🇪</span>
+                    <div class="team-name">জার্মানি</div>
+                    <div class="team-nickname">Die Mannschaft</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ARGENTINA PAGE -->
+        <div id="argentinaPage" class="content-page">
+            <button class="back-btn" onclick="goHome()">
+                <span>←</span> Back
+            </button>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <span style="font-size: 60px;">🇦🇷</span>
+                <h2 style="color: #fbbf24; font-size: 24px;">আর্জেন্টিনা ফ্যান</h2>
+            </div>
+            <div class="chat-container">
+                <div class="typing-indicator" id="argTyping">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+                <div id="argentinaChat"></div>
+            </div>
+            <div class="share-section">
+                <div class="share-title">
+                    <span>🔥</span>
+                    বন্ধুদের পাঠান ও তাদের ফ্যান রিপোর্ট দেখুন!
+                </div>
+                <div class="share-buttons">
+                    <a href="#" class="share-btn fb-btn" id="argFb" target="_blank">
+                        <svg viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        ফেসবুক
+                    </a>
+                    <a href="#" class="share-btn msg-btn" id="argMsg" target="_blank">
+                        <svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.03 2 10.89c0 2.55 1.28 4.83 3.26 6.34V22l5.74-3.16c.48.06.97.09 1.47.09 5.52 0 10-4.03 10-8.89S17.52 2 12 2zm1.13 11.88l-2.56-2.73-4.98 2.73 5.48-5.82 2.62 2.73 4.91-2.73-5.47 5.82z"/></svg>
+                        মেসেঞ্জার
+                    </a>
+                    <a href="#" class="share-btn wa-btn" id="argWa" target="_blank">
+                        <svg viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        হোয়াটসঅ্যাপ
+                    </a>
+                </div>
+                <button class="copy-btn" onclick="copyLink()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                    লিংক কপি করুন
+                </button>
+            </div>
+        </div>
+
+        <!-- BRAZIL PAGE -->
+        <div id="brazilPage" class="content-page">
+            <button class="back-btn" onclick="goHome()">
+                <span>←</span> Back
+            </button>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <span style="font-size: 60px;">🇧🇷</span>
+                <h2 style="color: #fbbf24; font-size: 24px;">ব্রাজিল ফ্যান</h2>
+            </div>
+            <div class="chat-container">
+                <div class="typing-indicator" id="braTyping">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+                <div id="brazilChat"></div>
+            </div>
+            <div class="share-section">
+                <div class="share-title">
+                    <span>🔥</span>
+                    বন্ধুদের পাঠান ও তাদের ফ্যান রিপোর্ট দেখুন!
+                </div>
+                <div class="share-buttons">
+                    <a href="#" class="share-btn fb-btn" id="braFb" target="_blank">
+                        <svg viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        ফেসবুক
+                    </a>
+                    <a href="#" class="share-btn msg-btn" id="braMsg" target="_blank">
+                        <svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.03 2 10.89c0 2.55 1.28 4.83 3.26 6.34V22l5.74-3.16c.48.06.97.09 1.47.09 5.52 0 10-4.03 10-8.89S17.52 2 12 2zm1.13 11.88l-2.56-2.73-4.98 2.73 5.48-5.82 2.62 2.73 4.91-2.73-5.47 5.82z"/></svg>
+                        মেসেঞ্জার
+                    </a>
+                    <a href="#" class="share-btn wa-btn" id="braWa" target="_blank">
+                        <svg viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        হোয়াটসঅ্যাপ
+                    </a>
+                </div>
+                <button class="copy-btn" onclick="copyLink()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                    লিংক কপি করুন
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="argentinaAudio" src="https://s5-8.ttsmaker-file.com/file/2026-06-05-181958_114443.mp3"></audio>
+    <audio id="brazilAudio" src="https://s5-3.ttsmaker-file.com/file/2026-06-05-181542_126463.mp3"></audio>
+
+    <button class="audio-control" id="audioBtn" onclick="toggleAudio()" style="display:none;">🔊</button>
+
+    <div class="footer">
+        <p>© FIFA World Cup 2026 Fan Checker</p>
+    </div>
+
+    <script>
+        // Auto-detect current page URL for sharing
+        const currentUrl = window.location.href;
+        const shareTextArg = "এই বিশ্বকাপে আমি আর্জেন্টিনার ফ্যান! তুমি কোন দলের ফ্যান চেক করো: " + currentUrl;
+        const shareTextBra = "এই বিশ্বকাপে আমি ব্রাজিলের ফ্যান! তুমি কোন দলের ফ্যান চেক করো: " + currentUrl;
+
+        // Set share links dynamically
+        document.getElementById('argFb').href = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(currentUrl);
+        document.getElementById('argMsg').href = "fb-messenger://share/?link=" + encodeURIComponent(currentUrl);
+        document.getElementById('argWa').href = "https://api.whatsapp.com/send?text=" + encodeURIComponent(shareTextArg);
+
+        document.getElementById('braFb').href = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(currentUrl);
+        document.getElementById('braMsg').href = "fb-messenger://share/?link=" + encodeURIComponent(currentUrl);
+        document.getElementById('braWa').href = "https://api.whatsapp.com/send?text=" + encodeURIComponent(shareTextBra);
+
+        // Background balls
+        const bgBalls = document.getElementById('bgBalls');
+        for(let i=0; i<8; i++) {
+            const ball = document.createElement('div');
+            ball.className = 'bg-ball';
+            ball.style.left = Math.random() * 100 + '%';
+            ball.style.animationDuration = (15 + Math.random() * 15) + 's';
+            ball.style.animationDelay = (Math.random() * 10) + 's';
+            bgBalls.appendChild(ball);
+        }
+
+        // Visitor count
+        let count = 1247;
+        setInterval(() => {
+            count += Math.floor(Math.random() * 3);
+            document.getElementById('visitorCount').textContent = count.toLocaleString('bn-BD');
+        }, 5000);
+
+        const argentinaMessages = [
+            "তোমরা আর্জেন্টিনার ভক্ত, তোমরা ব্রাজিল ফ্যানদের সহ্য করতে পারো না!",
+            "ব্রাজিল ফ্যানরা তোমাদের দেখলে বলে — 'তোমরা নাকি হাত দিয়ে গোল দেও।'",
+            "আর ১৯৪৫ সালে (৬ গোল), ১৯৬০ সালে (৫ গোল), ১৯৬৩ সালে (৫ গোল) — তোমরা ব্রাজিলের সাথে এতো এতো গোল খেয়ে হেরে গেছিলে!",
+            "কি রাগ করলা? যদি রাগ করো তাহলে তোমার ব্রাজিল ফ্যান বন্ধুর কাছে Facebook, Messenger অথবা WhatsApp-এ শেয়ার করো!",
+            "তোমাকে যেমন খোঁচা দিছি, ওকেও এমনভাবে খোঁচা দিবো!",
+            "আর তুমি যদি নিজে দেখতে চাও ব্রাজিল ফ্যানদের কি কি খোঁচা দিবো — Back বাটনে ক্লিক করে ফ্যান হিসেবে ব্রাজিল সিলেক্ট করো!"
+        ];
+
+        const brazilMessages = [
+            "কি ব্রাজিলের ফ্যান, সোনারা কেমন আছো?",
+            "তোমরা নাকি ৫টা কাপ নিয়েছো, কিন্তু তোমরা আর্জেন্টিনার ফ্যানরা 7up বললে রেগে যাচ্ছো!",
+            "রাগারই তো কথা — তোমরা ২০১৪ সালের ফুটবল বিশ্বকাপে জার্মানির বিপক্ষে ব্রাজিল ৭-১ গোলে হেরেছিলে!",
+            "আর তোমাদের নেইমার তো ফাউল করার উস্তাদ!",
+            "তাই রাগ করো না সোনারা, এইবার ২০২৬ সালের বিশ্বকাপে আর্জেন্টিনা জিতবে!",
+            "কি রাগ করলা? যদি রাগ করো তাহলে তোমার আর্জেন্টিনা ফ্যান বন্ধুর কাছে শেয়ার করো!"
+        ];
+
+        let currentAudio = null;
+        let audioPlaying = false;
+
+        function showTeam(team) {
+            document.getElementById('homePage').classList.remove('active');
+            document.getElementById('argentinaPage').classList.remove('active');
+            document.getElementById('brazilPage').classList.remove('active');
+
+            if(team === 'argentina') {
+                document.getElementById('argentinaPage').classList.add('active');
+                playAudio('argentinaAudio');
+                animateChat('argentinaChat', argentinaMessages, 'argTyping');
+            } else if(team === 'brazil') {
+                document.getElementById('brazilPage').classList.add('active');
+                playAudio('brazilAudio');
+                animateChat('brazilChat', brazilMessages, 'braTyping');
+            }
+            document.getElementById('audioBtn').style.display = 'flex';
+        }
+
+        function goHome() {
+            document.getElementById('homePage').classList.add('active');
+            document.getElementById('argentinaPage').classList.remove('active');
+            document.getElementById('brazilPage').classList.remove('active');
+            stopAudio();
+            document.getElementById('audioBtn').style.display = 'none';
+            document.getElementById('argentinaChat').innerHTML = '';
+            document.getElementById('brazilChat').innerHTML = '';
+            document.getElementById('argTyping').style.display = 'flex';
+            document.getElementById('braTyping').style.display = 'flex';
+        }
+
+        function animateChat(containerId, messages, typingId) {
+            const container = document.getElementById(containerId);
+            const typing = document.getElementById(typingId);
+            container.innerHTML = '';
+            typing.style.display = 'flex';
+            let i = 0;
+            function showNext() {
+                if(i >= messages.length) {
+                    typing.style.display = 'none';
+                    return;
+                }
+                const bubble = document.createElement('div');
+                bubble.className = 'chat-bubble b' + (i+1);
+                bubble.textContent = messages[i];
+                container.appendChild(bubble);
+                i++;
+                setTimeout(showNext, 2500);
+            }
+            setTimeout(showNext, 1500);
+        }
+
+        function playAudio(audioId) {
+            stopAudio();
+            currentAudio = document.getElementById(audioId);
+            if(currentAudio) {
+                currentAudio.play().catch(e => console.log('Audio play failed:', e));
+                audioPlaying = true;
+                document.getElementById('audioBtn').classList.add('playing');
+            }
+        }
+
+        function stopAudio() {
+            if(currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            audioPlaying = false;
+            document.getElementById('audioBtn').classList.remove('playing');
+        }
+
+        function toggleAudio() {
+            if(!currentAudio) return;
+            if(audioPlaying) {
+                currentAudio.pause();
+                audioPlaying = false;
+                document.getElementById('audioBtn').textContent = '🔇';
+                document.getElementById('audioBtn').classList.remove('playing');
+            } else {
+                currentAudio.play().catch(e => console.log('Audio play failed:', e));
+                audioPlaying = true;
+                document.getElementById('audioBtn').textContent = '🔊';
+                document.getElementById('audioBtn').classList.add('playing');
+            }
+        }
+
+        function redirectToLink() {
+            window.location.href = 'https://ballroomfondnessnovelty.com/i9b54k2bk?key=abce17dac292b2e0275187320b62d77e1';
+        }
+
+        function copyLink() {
+            const dummy = document.createElement('input');
+            document.body.appendChild(dummy);
+            dummy.value = window.location.href;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            alert('লিংক কপি হয়েছে!');
+        }
+
+        document.getElementById('argentinaAudio').addEventListener('ended', () => {
+            audioPlaying = false;
+            document.getElementById('audioBtn').textContent = '🔇';
+            document.getElementById('audioBtn').classList.remove('playing');
+        });
+        document.getElementById('brazilAudio').addEventListener('ended', () => {
+            audioPlaying = false;
+            document.getElementById('audioBtn').textContent = '🔇';
+            document.getElementById('audioBtn').classList.remove('playing');
+        });
+    </script>
+</body>
+</html>
